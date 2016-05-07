@@ -6,6 +6,7 @@
 #include <time.h>
 
 #define SIZE 9
+#define K 10
 
 using namespace std;
 
@@ -67,8 +68,8 @@ class Buffer : public Monitor {
 };
 
   Buffer::Buffer(){
-    bool forbid_A  = false ;
-    bool forbid_B  = false;
+     bool forbid_A  = false ;
+    bool forbid_B = false ;
     bool B_asks = false;
   }
 
@@ -82,16 +83,19 @@ class Buffer : public Monitor {
 		}
 		product = 'A';
 		cout << "Producent A\n" << product << endl;
-		buffer.ToBegin(product);
+		ToBegin(product);
     cout << "Dodano element: " << product << endl;
 		cout << "Bufor: " << buffer.size() << endl;
     if (buffer.size() > 3) {
         if (buffer.size() > 4) {
            cout << "Bufor > 4 : " << buffer.size() << endl;
             signal(sem_bigger_than_4);
+            signal(sem_bigger_than_3);
         }
+      else {  
       cout << "Bufor > 3 : " << buffer.size() << endl;
       signal(sem_bigger_than_3);
+    }
     }
 		if (forbid_B == true && buffer.size() <= SIZE - 3) {
       signal(sem_let_B);
@@ -112,7 +116,7 @@ class Buffer : public Monitor {
     for (int i=0; i<3; i++)
       {
     cout << "B produkuje " << product << endl;
-    buffer.ToBegin(product);
+    ToBegin(product);
     cout << "Dodano element: " << product << endl;
     cout << "Bufor: " << buffer.size() << endl;
       }
@@ -121,9 +125,12 @@ class Buffer : public Monitor {
         if (buffer.size() > 4) {
            cout << "Bufor > 4 : " << buffer.size() << endl;
             signal(sem_bigger_than_4);
+            signal(sem_bigger_than_3);
         }
+        else {
       cout << "Bufor > 3 : " << buffer.size() << endl;
       signal(sem_bigger_than_3);
+    }
     }
 
     B_asks = false;
@@ -140,7 +147,7 @@ class Buffer : public Monitor {
     }
     cout << "Konsument A " << endl;
     cout << "Usuwam z bufora " << (char)buffer.back() << endl;
-    buffer.DeleteTail();
+    DeleteTail();
     cout << "Bufor: " << buffer.size() << endl;      
     if (forbid_B == true && buffer.size() <= SIZE - 3) {
     	cout << "Obudz B" << endl;
@@ -162,7 +169,7 @@ class Buffer : public Monitor {
 
     for (int i=0; i<2; i++) {
     cout << "Usuwam z bufora " << (char)buffer.back() << endl;
-    buffer.DeleteTail();
+    DeleteTail();
     cout << "Bufor: " << buffer.size() << endl;
     }
  
@@ -171,8 +178,10 @@ if (buffer.size() > 3) {
            cout << "Bufor > 4 : " << buffer.size() << endl;
             signal(sem_bigger_than_4);
         }
+     else { 
       cout << "Bufor > 3 : " << buffer.size() << endl;
       signal(sem_bigger_than_3);
+    }
     }
 
     if (forbid_B == true && buffer.size() <= SIZE - 3) {
@@ -188,35 +197,39 @@ if (buffer.size() > 3) {
 
 ////////////////////////////////////
 ////////////////////////////////////
-Buffer bufor;
+Buffer buffer;
 
 void * ProducerA(void*) {
-  int product;
-  while ( 1 ) {
-    bufor.produce_A();
-    //sleep(rand()%10);
+  int i = 0;
+  while ( i!= K ) {
+    i++;
+    buffer.produce_A();
+    
   }
 }
 
 void * ProducerB(void*) {
-  while( 1 ) {
-    bufor.produce_B();
-    //sleep(rand()%10);
+  int i = 0;
+  while( i!= K ) {
+    i++;
+    buffer.produce_B();
   }
 }
 
 void * ConsumerA(void*) {
-  while( 1 ) {
-    bufor.consume_A();
-    //sleep(rand()%10);
+  int i = 0;
+  while( i!= K ) {
+    i++;
+    buffer.consume_A();
   }
 }
 
 void * ConsumerB(void*) {
-  while( 1 ) {
-    bufor.consume_B();
-    //sleep(rand()%10);
-  }
+  int i = 0;
+  while( i!= K ) {
+    i++;
+    buffer.consume_B();
+    }
 }
 
 ////////////////////////////////////
