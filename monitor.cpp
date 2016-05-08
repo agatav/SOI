@@ -6,7 +6,7 @@
 #include <time.h>
 
 #define SIZE 9
-#define K 50000
+#define K 99999
 
 using namespace std;
 
@@ -20,9 +20,6 @@ class Buffer : public Monitor {
     Condition sem_let_A;
     Condition sem_let_B; //pozwalamy pisać
 
-    bool forbid_A ;
-    bool forbid_B ;
-    bool B_asks ;
 
     int back() {
       return buffer.back();
@@ -68,18 +65,13 @@ class Buffer : public Monitor {
 };
 
   Buffer::Buffer(){
-     bool forbid_A  = false ;
-    bool forbid_B = false ;
-    bool B_asks = false;
   }
 
 	void Buffer::produce_A() {
 		enter();
-		if (B_asks == true || buffer.size() == SIZE) {
+		if (buffer.size() == SIZE) {
 			cout << "A nie produkuje" << endl;
-      forbid_A = true;
 			wait(sem_let_A);
-			forbid_A = false;
 		}
 		product = 'A';
 		cout << "Producent A\n" << product << endl;
@@ -87,26 +79,23 @@ class Buffer : public Monitor {
     cout << "Dodano element: " << product << endl;
 		cout << "Bufor: " << buffer.size() << endl;
    
-        if (buffer.size() > 4) {
-            signal(sem_bigger_than_4);
-        }
-       if (buffer.size() > 3) {  
-      signal(sem_bigger_than_3);
-    }
-		if (forbid_B == true && buffer.size() <= SIZE - 3) {
-      signal(sem_let_B);
-    }
-   	leave();
+            if (buffer.size() > 4) {
+              signal(sem_bigger_than_4);
+          }
+         if (buffer.size() > 3) {  
+        signal(sem_bigger_than_3);
+      }
+  		if (buffer.size() <= SIZE - 3) {
+        signal(sem_let_B);
+      }
+     	leave();
   }
 
   void Buffer::produce_B() {
     enter();
-    B_asks = true;
     if (buffer.size() > SIZE - 3) {
 	    cout << "B nie produkuje" << endl;
-      forbid_B = true;
       wait(sem_let_B);
-      forbid_B = false;
     }
     product = 'B';
     for (int i=0; i<3; i++)
@@ -124,8 +113,7 @@ class Buffer : public Monitor {
       signal(sem_bigger_than_3);
     }
   
-      B_asks = false;
-    if (forbid_A == true && buffer.size() < SIZE) {
+    if (buffer.size() < SIZE) {
       signal(sem_let_A);
     }
     leave();
@@ -140,12 +128,10 @@ class Buffer : public Monitor {
     cout << "Usuwam z bufora " << (char)buffer.back() << endl;
     DeleteTail();
     cout << "Bufor: " << buffer.size() << endl;      
-    if (forbid_B == true && buffer.size() <= SIZE - 3) {
-    	cout << "Obudz B" << endl;
+    if (buffer.size() <= SIZE - 3) {
     	signal(sem_let_B);
     }
-    else if (forbid_A == true && buffer.size() < SIZE) {
-    	cout << "Obudz A" << endl;
+    else if ( buffer.size() < SIZE) {
     	signal(sem_let_A);
     }
 		leave();
@@ -171,12 +157,10 @@ class Buffer : public Monitor {
       signal(sem_bigger_than_3);
     }
 
-    if (forbid_B == true && buffer.size() <= SIZE - 3) {
-    cout << "Obudz B" << endl;
+    if (buffer.size() <= SIZE - 3) {
     	signal(sem_let_B);
     }
-    else if (forbid_A == true && buffer.size() < SIZE) {
-    	cout << "Obudz A" << endl;
+    else if (buffer.size() < SIZE) {
     signal(sem_let_A);
     }
     leave();
@@ -269,6 +253,3 @@ int main(void) {
     pthread_join(t_id[i],(void **)NULL);
 	return 0;
 }
-// dodanie warunków sprawdzania do konsumentów -> to samo co w producencie
-// w producencie A, przy B_asks sprawdzić, czy może wstawić 3 elementy
-// producencie 169, 170 na monitorach nie będzie działało, i A może prześcignąć 
