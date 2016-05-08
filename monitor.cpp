@@ -6,7 +6,7 @@
 #include <time.h>
 
 #define SIZE 9
-#define K 10
+#define K 50000
 
 using namespace std;
 
@@ -86,16 +86,12 @@ class Buffer : public Monitor {
 		ToBegin(product);
     cout << "Dodano element: " << product << endl;
 		cout << "Bufor: " << buffer.size() << endl;
-    if (buffer.size() > 3) {
+   
         if (buffer.size() > 4) {
-           cout << "Bufor > 4 : " << buffer.size() << endl;
             signal(sem_bigger_than_4);
-            signal(sem_bigger_than_3);
         }
-      else {  
-      cout << "Bufor > 3 : " << buffer.size() << endl;
+       if (buffer.size() > 3) {  
       signal(sem_bigger_than_3);
-    }
     }
 		if (forbid_B == true && buffer.size() <= SIZE - 3) {
       signal(sem_let_B);
@@ -121,19 +117,14 @@ class Buffer : public Monitor {
     cout << "Bufor: " << buffer.size() << endl;
       }
 
-    if (buffer.size() > 3) {
-        if (buffer.size() > 4) {
-           cout << "Bufor > 4 : " << buffer.size() << endl;
+    if (buffer.size() > 4) {
             signal(sem_bigger_than_4);
-            signal(sem_bigger_than_3);
         }
-        else {
-      cout << "Bufor > 3 : " << buffer.size() << endl;
+       if (buffer.size() > 3) {  
       signal(sem_bigger_than_3);
     }
-    }
-
-    B_asks = false;
+  
+      B_asks = false;
     if (forbid_A == true && buffer.size() < SIZE) {
       signal(sem_let_A);
     }
@@ -173,15 +164,11 @@ class Buffer : public Monitor {
     cout << "Bufor: " << buffer.size() << endl;
     }
  
-if (buffer.size() > 3) {
-        if (buffer.size() > 4) {
-           cout << "Bufor > 4 : " << buffer.size() << endl;
+ if (buffer.size() > 4) {
             signal(sem_bigger_than_4);
         }
-     else { 
-      cout << "Bufor > 3 : " << buffer.size() << endl;
+       if (buffer.size() > 3) {  
       signal(sem_bigger_than_3);
-    }
     }
 
     if (forbid_B == true && buffer.size() <= SIZE - 3) {
@@ -199,7 +186,32 @@ if (buffer.size() > 3) {
 ////////////////////////////////////
 Buffer buffer;
 
-void * ProducerA(void*) {
+/* void * ProducerA(void*) {
+  while (1) {
+    buffer.produce_A();
+    
+  }
+}
+
+void * ProducerB(void*) {
+  while( 1) {
+    buffer.produce_B();
+  }
+}
+
+void * ConsumerA(void*) {
+    while( 1 ) {
+    buffer.consume_A();
+  }
+}
+
+void * ConsumerB(void*) {
+   while( 1 ) {
+    buffer.consume_B();
+    }
+} */
+
+ void * ProducerA(void*) {
   int i = 0;
   while ( i!= K ) {
     i++;
@@ -210,7 +222,7 @@ void * ProducerA(void*) {
 
 void * ProducerB(void*) {
   int i = 0;
-  while( i!= K ) {
+  while( i!= K) {
     i++;
     buffer.produce_B();
   }
@@ -227,10 +239,10 @@ void * ConsumerA(void*) {
 void * ConsumerB(void*) {
   int i = 0;
   while( i!= K ) {
-    i++;
+   i++;
     buffer.consume_B();
     }
-}
+} 
 
 ////////////////////////////////////
 ////////////////////////////////////
